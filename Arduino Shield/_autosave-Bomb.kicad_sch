@@ -1157,7 +1157,7 @@
   (symbol (lib_name "GND_4") (lib_id "power:GND") (at 134.62 97.79 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 33d7bb50-7f98-4f0d-aab9-331f7ac648c8)
-    (property "Reference" "#PWR?" (id 0) (at 134.62 104.14 0)
+    (property "Reference" "#PWR0108" (id 0) (at 134.62 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (id 1) (at 134.62 102.87 0))
@@ -1173,7 +1173,7 @@
   (symbol (lib_id "power:+5V") (at 134.62 85.09 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 64fd6d22-94c2-46a8-af3d-36696e98cb48)
-    (property "Reference" "#PWR?" (id 0) (at 134.62 88.9 0)
+    (property "Reference" "#PWR0109" (id 0) (at 134.62 88.9 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+5V" (id 1) (at 134.62 80.01 0))
@@ -1223,9 +1223,9 @@
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "C" (id 1) (at 138.43 92.7099 0)
-      (effects (font (size 1.27 1.27)) (justify left))
+      (effects (font (size 1.27 1.27)) (justify left) hide)
     )
-    (property "Footprint" "" (id 2) (at 135.5852 95.25 0)
+    (property "Footprint" "Capacitor_SMD:C_0504_1310Metric_Pad0.83x1.28mm_HandSolder" (id 2) (at 135.5852 95.25 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 134.62 91.44 0)
@@ -1279,7 +1279,7 @@
   (symbol (lib_name "GND_3") (lib_id "power:GND") (at 87.63 91.44 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid be7b6f0b-089e-451d-ad44-f2f61bc1d67e)
-    (property "Reference" "#PWR?" (id 0) (at 87.63 97.79 0)
+    (property "Reference" "#PWR0107" (id 0) (at 87.63 97.79 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (id 1) (at 87.63 96.52 0))
@@ -1374,17 +1374,17 @@
     (path "/79759949-1f19-43df-a3ad-f9899d8c63e9"
       (reference "#PWR0106") (unit 1) (value "GND") (footprint "")
     )
+    (path "/be7b6f0b-089e-451d-ad44-f2f61bc1d67e"
+      (reference "#PWR0107") (unit 1) (value "GND") (footprint "")
+    )
     (path "/33d7bb50-7f98-4f0d-aab9-331f7ac648c8"
-      (reference "#PWR?") (unit 1) (value "GND") (footprint "")
+      (reference "#PWR0108") (unit 1) (value "GND") (footprint "")
     )
     (path "/64fd6d22-94c2-46a8-af3d-36696e98cb48"
-      (reference "#PWR?") (unit 1) (value "+5V") (footprint "")
-    )
-    (path "/be7b6f0b-089e-451d-ad44-f2f61bc1d67e"
-      (reference "#PWR?") (unit 1) (value "GND") (footprint "")
+      (reference "#PWR0109") (unit 1) (value "+5V") (footprint "")
     )
     (path "/9ce64185-fda7-4aae-b239-f4139326ce56"
-      (reference "C1") (unit 1) (value "C") (footprint "")
+      (reference "C1") (unit 1) (value "C") (footprint "Capacitor_SMD:C_0504_1310Metric_Pad0.83x1.28mm_HandSolder")
     )
     (path "/00000000-0000-0000-0000-000056d72368"
       (reference "J1") (unit 1) (value "Digital/PWM") (footprint "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical")
