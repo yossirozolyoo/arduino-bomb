@@ -50,7 +50,7 @@
     (aux_axis_origin 100 100)
     (grid_origin 115.24 46.66)
     (pcbplotparams
-      (layerselection 0x00010fc_ffffffff)
+      (layerselection 0x00310fc_ffffffff)
       (disableapertmacros false)
       (usegerberextensions true)
       (usegerberattributes true)
