@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEBUG_SERIAL
+// #define DEBUG_SERIAL
 #ifdef DEBUG_SERIAL
 
 #define DEBUG_INIT()      Serial.begin(9600)
@@ -13,5 +13,6 @@
 #define DEBUG_INIT()
 #define DEBUG_PRINT(x)
 #define DEBUG_PUT(x)
+#define DEBUG_HEX(x)
 
 #endif

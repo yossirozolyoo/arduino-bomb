@@ -1,4 +1,5 @@
 #include "levels.h"
+#include "serialServer.h"
 
 #define COUNTOF(arr)    (sizeof(arr) / sizeof(arr[0]))
 #define TOTAL_TIME      90 * 60
@@ -25,6 +26,8 @@ void setup_levels() {
   }
 
   end_time = (millis() / 1000) + TOTAL_TIME;
+
+  initServer();
 }
 
 static uint32_t get_level_pins() {
@@ -62,6 +65,10 @@ bool level_done() {
   // Check if time passed
   if (end_time < (millis() / 1000)) {
     mode = RunningModes::FAIL;
+    return true;
+  }
+
+  if (handleUserCommands()) {
     return true;
   }
 
