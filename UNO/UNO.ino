@@ -1,6 +1,6 @@
 #include "levels.h"
 #include "debugSerial.h"
-
+#include "screen.h"
 #include <SoftwareSerial.h>
 
 #define ATTINY85_RESET_PIN         10
@@ -49,6 +49,7 @@ void setup() {
 
   // Init debug module
   DEBUG_INIT();
+  status_leds[StatusLEDs::GREEN].blink(100, 1900);
 }
 
 void loop() {

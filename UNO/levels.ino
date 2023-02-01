@@ -3,16 +3,9 @@
 
 #define COUNTOF(arr)    (sizeof(arr) / sizeof(arr[0]))
 #define TOTAL_TIME      90 * 60
-#define PIN_RED         2
-#define PIN_YELLOW      3
-#define PIN_BLUE        4
-#define PIN_BLACK       5
 
 static const int level_pins[] = {
-  PIN_RED,
-  PIN_YELLOW,
-  PIN_BLUE,
-  PIN_BLACK
+  A0, A1, A2, A3
 };
 
 RunningModes::RunningModes mode = RunningModes::UART;
@@ -43,7 +36,11 @@ static uint32_t get_level_pins() {
 }
 
 void failiure_main() {
-  // TODO: Do something here
+  for (size_t i = 0; i < StatusLEDs::NUM_LEDS; i++) {
+    status_leds[i].off();
+  }
+
+  status_leds[StatusLEDs::RED].blink(100, 100);
   DEBUG_PRINT("FAIL");
   while (true) {
     refresh_screen();
@@ -51,10 +48,32 @@ void failiure_main() {
 }
 
 void done_main() {
-  // TODO: Do something here
   DEBUG_PRINT("DONE");
+
+  for (size_t i = 0; i < StatusLEDs::NUM_LEDS; i++) {
+    status_leds[i].off();
+  }
+
+  unsigned long start = millis();
+  unsigned long current = start;
   while (true) {
-    refresh_screen();
+    // Turn on leds
+    for (size_t i = 0; i < StatusLEDs::NUM_LEDS; i++) {
+      start = millis();
+      status_leds[i].on();
+      while ((current = millis()) < start + 100) {
+        refresh_screen();
+      }
+    }
+
+    // Turn off leds
+    for (size_t i = 0; i < StatusLEDs::NUM_LEDS; i++) {
+      start = millis();
+      status_leds[i].off();
+      while ((current = millis()) < start + 100) {
+        refresh_screen();
+      }
+    }
   }
 }
 

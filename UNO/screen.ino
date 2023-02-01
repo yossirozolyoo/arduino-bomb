@@ -2,6 +2,7 @@
 #include "screen.h"
 #include <U8glib.h>
 
+#define COUNTOF(arr)    (sizeof(arr) / sizeof(arr[0]))
 #define REFRESH_RATE        400
 #define CLOCK_Y             30
 #define PROTOCOL_Y          55
@@ -11,6 +12,8 @@
 unsigned long last_refresh = 0;
 U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_FAST);	// Dev 0, Fast I2C / TWI
 static int screenWidth = 0;
+
+StatusLED status_leds[StatusLEDs::NUM_LEDS];
 
 void setup_screen(void) {
   // flip screen, if required
@@ -34,6 +37,12 @@ void setup_screen(void) {
   }
 
   screenWidth = u8g.getWidth();
+  
+  status_leds[0].init(6);
+  status_leds[1].init(5);
+  status_leds[2].init(4);
+  status_leds[3].init(3);
+  status_leds[4].init(2);
 }
 
 void drawCenteredString(const char * str, int y) {
@@ -119,9 +128,17 @@ static void draw() {
   }
 }
 
+static void refresh_leds(unsigned long current) {
+  for (size_t i = 0; i < COUNTOF(status_leds); i++) {
+    status_leds[i].refresh(current);
+  }
+}
+
 void refresh_screen() {
-  // Check if refresh needed
   unsigned long current = millis();
+  refresh_leds(current);
+
+  // Check if refresh needed
   if ((current - last_refresh < REFRESH_RATE) && (last_refresh != 0)) {
     return;
   }
