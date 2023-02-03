@@ -1,5 +1,6 @@
 #include "levels.h"
 #include "serialServer.h"
+#include <string.h>
 
 #define COUNTOF(arr)    (sizeof(arr) / sizeof(arr[0]))
 #define TOTAL_TIME      90 * 60
@@ -42,7 +43,7 @@ void failiure_main() {
 
   status_leds[StatusLEDs::RED].blink(100, 100);
   DEBUG_PRINT("FAIL");
-  while (true) {
+  while (mode == RunningModes::FAIL) {
     refresh_screen();
     handleUserCommands();
   }
@@ -57,7 +58,7 @@ void done_main() {
 
   unsigned long start = millis();
   unsigned long current = start;
-  while (true) {
+  while (mode == RunningModes::DONE) {
     // Turn on leds
     for (size_t i = 0; i < StatusLEDs::NUM_LEDS; i++) {
       start = millis();
@@ -80,9 +81,13 @@ void done_main() {
   }
 }
 
-bool level_done() {
+bool level_done(RunningModes::RunningModes expectedMode) {
   // Refresh screen
   refresh_screen();
+
+  if (expectedMode != mode) {
+    return true;
+  }
 
   // Check if time passed
   if (end_time < (millis() / 1000)) {
@@ -121,4 +126,16 @@ bool level_done() {
 
 char get_raw_mode() {
   return RAW_MODES[(int)mode];
+}
+
+bool set_raw_mode(char raw_mode) {
+  const char *modes = RAW_MODES;
+  const char *found = strchr(modes, raw_mode);
+
+  if (!found) {
+    return false;
+  }
+
+  mode = found - modes;
+  return true;
 }

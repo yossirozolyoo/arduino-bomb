@@ -26,7 +26,7 @@ void uart_main() {
   SoftwareSerial serial(11, 12);
   serial.begin(9600);
 
-  while (!level_done()) {
+  while (!level_done(RunningModes::UART)) {
     serial.write(UART_MESSAGE);
     delay_and_refresh_screen(1000);
   }

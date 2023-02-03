@@ -5,11 +5,16 @@ from errors import *
 from datetime import timedelta
 
 
-COMMANDS = {
-    'keep-alive': b'\x00',
-    'get-remaining-time': b'\x01',
-    'set-remaining-time': b'\x02'
-}
+COMMANDS_NAMES = [
+    'keep-alive',
+    'get-remaining-time',
+    'set-remaining-time',
+    'get-level',
+    'set-level'
+]
+
+
+COMMANDS = {name: bytes([i]) for i, name in enumerate(COMMANDS_NAMES)}
 
 
 LEVELS = {
@@ -154,3 +159,27 @@ class Bomb:
             value = value.total_seconds()
 
         self.send_command(COMMANDS['set-remaining-time'] + struct.pack("I", value))
+
+    @property
+    def level(self) -> str:
+        """
+        Get the current level of the user
+        """
+        self.send_command(COMMANDS['get-level'])
+        raw_level = self._read(1)
+
+        for level, raw_encoding in LEVELS.items():
+            if raw_encoding == raw_level:
+                return level
+            
+        raise BadResponseError(f'Unexpected encoding of level {repr(raw_level)}')
+
+    @level.setter
+    def level(self, value: str):
+        """
+        Set the current level of the user
+        """
+        if value not in LEVELS:
+            raise ValueError(f'"{value}" is not a supported level')
+        
+        self.send_command(COMMANDS['set-level'] + LEVELS[value])

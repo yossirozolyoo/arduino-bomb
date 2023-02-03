@@ -49,12 +49,22 @@ void setup() {
 
   // Init debug module
   DEBUG_INIT();
-  status_leds[StatusLEDs::GREEN].blink(100, 1900);
 }
 
 void loop() {
   // Every mode's main calls to `level_done`, which switches `mode` to the 
   // next mode if the user cut the requested wire
+  switch (mode) {
+    case RunningModes::UART:
+    case RunningModes::SPI:
+    case RunningModes::I2C:
+      for (size_t i = 0; i < StatusLEDs::NUM_LEDS; i++) {
+        status_leds[i].off();
+      }
+
+      status_leds[StatusLEDs::GREEN].blink(100, 900);
+  }
+
   switch(mode) {
     case RunningModes::UART:
       uart_main();

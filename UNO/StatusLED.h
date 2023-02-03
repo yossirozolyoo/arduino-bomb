@@ -23,6 +23,9 @@ public:
 
   void pulse(unsigned long high);
   void pulse(unsigned long high, unsigned long low, unsigned int count);
+  LEDMode::LEDMode get_mode() {
+    return this->mode;
+  }
 
 private:
   bool update_mode_if_needed(unsigned long current, unsigned long interval, LEDMode::LEDMode new_mode, int pin_value);

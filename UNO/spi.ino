@@ -64,7 +64,7 @@ void spi_main() {
   // TODO: Change this to status polling logic
   delay_and_refresh_screen(5000);
 
-  while (!level_done()) {
+  while (!level_done(RunningModes::SPI)) {
     // Start transaction
     digitalWrite(SPI_CS, LOW);
     spi_exchange_message();

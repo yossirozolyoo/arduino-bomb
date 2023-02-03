@@ -23,7 +23,8 @@ void done_main();
 void failiure_main();
 
 // This function internally switches `mode` if the user cut the correct wire
-bool level_done();
+bool level_done(RunningModes::RunningModes expectedMode);
 void setup_levels();
 
 char get_raw_mode();
+bool set_raw_mode(char raw_mode);

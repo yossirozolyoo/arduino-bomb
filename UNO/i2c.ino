@@ -19,7 +19,7 @@ void i2c_main() {
   I2CInit(&bbi2c, 1000); // 1K Clock
 
   uint8_t recieve_buffer[sizeof(I2C_MESSAGE) - 1];
-  while (!level_done()) {
+  while (!level_done(RunningModes::I2C)) {
     I2CWrite(&bbi2c, I2C_ADDRESS, I2C_MESSAGE, sizeof(I2C_MESSAGE) - 1);
     delay_and_refresh_screen(2000);
     // I2CRead(&bbi2c, I2C_ADDRESS, recieve_buffer, sizeof(recieve_buffer));

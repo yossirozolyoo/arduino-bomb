@@ -2,14 +2,16 @@
 #include "screen.h"
 
 #define SERIAL_TIMEOUT      1000
+#define COUNTOF(arr)    (sizeof(arr) / sizeof(arr[0]))
+
 
 namespace Commands {
   enum Commands {
     KEEP_ALIVE,
     GET_REMAINING_TIME,
     SET_REMAINING_TIME,
-    
-    NUM_COMMANDS
+    GET_LEVEL,
+    SET_LEVEL,
   };
 };
 
@@ -78,10 +80,28 @@ static void set_remaining_time() {
   }
 }
 
-static command command_handlers[Commands::NUM_COMMANDS] = {
+static void get_level() {
+  ack();
+  write(get_raw_mode());
+}
+
+static void set_level() {
+  char raw_mode = 0;
+
+  if (read(raw_mode)) {
+    ack();
+    set_raw_mode(raw_mode);
+  } else {
+    nack();
+  }
+}
+
+static command command_handlers[] = {
   keep_alive,
   get_remaining_time,
-  set_remaining_time
+  set_remaining_time,
+  get_level,
+  set_level
 };
 
 void initServer() {
@@ -96,7 +116,7 @@ bool handleUserCommands() {
   }
 
   Commands::Commands opcode = (Commands::Commands) (Serial.read());
-  if (opcode >= Commands::NUM_COMMANDS) {
+  if (opcode >= COUNTOF(command_handlers)) {
     nack();
   }
 
