@@ -1,14 +1,28 @@
 import serial
 import struct
+from typing import Union
 from errors import *
 from datetime import timedelta
 
 
 COMMANDS = {
-    'keep-alive': b'\x60',
-    'get-remaining-time': b'\x61'
+    'keep-alive': b'\x00',
+    'get-remaining-time': b'\x01',
+    'set-remaining-time': b'\x02'
 }
+
+
+LEVELS = {
+    'uart': b'U',
+    'spi': b'S',
+    'i2c': b'I',
+    'done': b'D',
+    'fail': b'F'
+}
+
+
 ACK = b'\x70'
+NACK = b'\x71'
 
 
 DEFAULT_SERIAL_CONFIGURATION = {
@@ -37,9 +51,13 @@ class Bomb:
         """
         configuration = DEFAULT_SERIAL_CONFIGURATION.copy()
         configuration.update(kwargs)
-        self._serial = serial.Serial(port, **configuration)
+        
+        try:
+            self._serial = serial.Serial(port, **configuration)
+        except (OSError, serial.SerialException):
+            raise SerialError(f'Cannot connect to serial port {port} with given configuration.')
 
-        self.keep_alive()
+        self._wait_for_ack()
 
     def _read(self, size: int) -> bytes:
         """
@@ -63,6 +81,36 @@ class Bomb:
         :return: The read value
         """        
         return struct.unpack("I", self._read(4))[0]
+    
+
+    def _write32(self, value: int):
+        """
+        Writes a 32-bit unsigned number to the serial.
+
+        :param value: The value to write
+        """        
+        self._serial.write(struct.pack("I", value))
+
+    @property
+    def port(self) -> str:
+        """
+        Return the COM port the bomb is connected to
+        """
+        return self._serial.port
+
+    def _wait_for_ack(self):
+        """
+        Wait for ACK sent by the bomb
+
+        :raises:
+            TimeoutError        On timeout
+            BadResponseError    When any response is returned instead of ACK
+        """
+        response = self._read(1)
+        if response == NACK:
+            raise NACKError()
+        elif response != ACK:
+            raise BadResponseError(f'Recieved 0x{response[0]:02x} instead of ACK')
 
     def send_command(self, command: bytes):
         """
@@ -73,10 +121,7 @@ class Bomb:
             BadResponseError    When any response is returned instead of ACK
         """
         self._serial.write(command)
-
-        response = self._read(1)
-        if response != ACK:
-            raise BadResponseError(f'Recieved 0x{response[0]:02x} instead of ACK on keep-alive')
+        self._wait_for_ack()
 
     def keep_alive(self):
         """
@@ -97,3 +142,15 @@ class Bomb:
         """
         self.send_command(COMMANDS['get-remaining-time'])
         return timedelta(seconds=self._read32())
+
+    @left.setter
+    def left(self, value: Union[int, timedelta]):
+        """
+        Set the time left on the bomb
+
+        :param value: An `int` or a `timedelta` object representing the left time on the bomb
+        """
+        if isinstance(value, timedelta):
+            value = value.total_seconds()
+
+        self.send_command(COMMANDS['set-remaining-time'] + struct.pack("I", value))

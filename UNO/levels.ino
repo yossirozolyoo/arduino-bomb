@@ -44,6 +44,7 @@ void failiure_main() {
   DEBUG_PRINT("FAIL");
   while (true) {
     refresh_screen();
+    handleUserCommands();
   }
 }
 
@@ -63,6 +64,7 @@ void done_main() {
       status_leds[i].on();
       while ((current = millis()) < start + 100) {
         refresh_screen();
+        handleUserCommands();
       }
     }
 
@@ -72,6 +74,7 @@ void done_main() {
       status_leds[i].off();
       while ((current = millis()) < start + 100) {
         refresh_screen();
+        handleUserCommands();
       }
     }
   }

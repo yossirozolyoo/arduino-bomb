@@ -12,3 +12,11 @@ class TimeoutError(ProtocolError):
 
 class BadResponseError(ProtocolError):
     pass
+
+
+class NACKError(BadResponseError):
+    pass
+
+
+class SerialError(BombError):
+    pass
