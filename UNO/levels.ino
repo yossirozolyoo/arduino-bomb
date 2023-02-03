@@ -102,6 +102,12 @@ bool level_done() {
     // The user cut the correct wire since the last check
     mode = (RunningModes::RunningModes) ((int)mode + 1);
     level_pins_last_state = current_state;
+
+    // Present an animation to the user based on the LEDs
+    for (size_t i = 0; i < StatusLEDs::NUM_LEDS; i++) {
+      status_leds[i].pulse(100, 200, 3);
+    }
+
     return true;
   }
 

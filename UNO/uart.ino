@@ -5,6 +5,21 @@
 
 #define UART_MESSAGE     "CUT THE RED WIRE"
 
+size_t read_bytes_and_refresh_screen(SoftwareSerial &serial, uint8_t *read_buffer, size_t buffer_size) {
+  unsigned long end_time = millis() + serial.getTimeout();
+  size_t left = buffer_size;
+  do {
+    while (left && serial.available()) {
+      *read_buffer = serial.read();
+      left--;
+    }
+
+    refresh_screen();
+  } while (millis() < end_time);
+
+  return buffer_size - left;
+}
+
 void uart_main() {
   DEBUG_PRINT("UART");
 
@@ -32,7 +47,7 @@ void uart_main() {
       serial.write(raw_mode);
 
       response = 'F';
-      serial.readBytes(&response, sizeof(response));
+      read_bytes_and_refresh_screen(serial, (uint8_t *)&response, sizeof(response));
     } while(response != raw_mode);
   }
 }
