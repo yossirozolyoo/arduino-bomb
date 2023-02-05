@@ -10,6 +10,8 @@
 #define SPI_MESSAGE     "CUT THE RED WIRE"
 #define SPI_HALF_CYCLE  3
 
+static unsigned long last_half_clock = 0;
+
 static void configure_spi_pins_as_master() {
   pinMode(SPI_MOSI, OUTPUT);
   pinMode(SPI_MISO, INPUT);
@@ -20,14 +22,23 @@ static void configure_spi_pins_as_master() {
 }
 
 static bool spi_exchange_bit(bool bit) {
+  unsigned long current = 0;
+
   // Here we assume SPI mode 0. At the start of every bit SCK is low, and we sample on the rising edge
   digitalWrite(SPI_MOSI, bit ? HIGH : LOW);
-  delay(SPI_HALF_CYCLE);
+  while ((current = millis()) < last_half_clock + SPI_HALF_CYCLE) {
+    refresh_screen();
+  }
   
+  last_half_clock = current;
   digitalWrite(SPI_SCK, HIGH);
   bool output = digitalRead(SPI_MISO) == HIGH;
-  delay(SPI_HALF_CYCLE);
+
+  while ((current = millis()) < last_half_clock + SPI_HALF_CYCLE) {
+    refresh_screen();
+  }
   
+  last_half_clock = current;
   digitalWrite(SPI_SCK, LOW);
 
   return output;
@@ -47,11 +58,11 @@ static uint8_t spi_exchange_byte(uint8_t byte) {
 }
 
 static void spi_exchange_message() {
-  // TODO: check how much refresh_screen streches the clock
+  last_half_clock = millis();
+
   // Send message
-  for (size_t i = 0; i < sizeof(SPI_MESSAGE) - 1; i++) {
+  for (size_t i = 0; (i < sizeof(SPI_MESSAGE) - 1) && !level_done(RunningModes::SPI); i++) {
     spi_exchange_byte(SPI_MESSAGE[i]);
-    refresh_screen();
   }
 }
 
@@ -65,13 +76,14 @@ void spi_main() {
   delay_and_refresh_screen(5000);
 
   while (!level_done(RunningModes::SPI)) {
+    delay_and_refresh_screen(1000);
+    
     // Start transaction
     digitalWrite(SPI_CS, LOW);
     spi_exchange_message();
 
     // End transaction
     digitalWrite(SPI_CS, HIGH);
-    delay_and_refresh_screen(1000);
   }
 
   if (mode != RunningModes::FAIL) {
