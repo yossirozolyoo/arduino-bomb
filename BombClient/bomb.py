@@ -143,6 +143,9 @@ class Bomb:
             TimeoutError        On timeout
             BadResponseError    When any response is returned instead of ACK
         """
+        if self._serial.in_waiting:
+            self._serial.read_all()
+
         self._serial.write(command)
         self._wait_for_ack()
 
