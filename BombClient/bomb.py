@@ -1,6 +1,6 @@
 import serial
 import struct
-from typing import Union
+from typing import Union, Sequence
 from errors import *
 from datetime import timedelta
 
@@ -10,7 +10,9 @@ COMMANDS_NAMES = [
     'get-remaining-time',
     'set-remaining-time',
     'get-level',
-    'set-level'
+    'set-level',
+    'get-level-queue',
+    'set-level-queue'
 ]
 
 
@@ -24,6 +26,8 @@ LEVELS = {
     'done': b'D',
     'fail': b'F'
 }
+
+RAW_LEVELS = {value[0]: key for key, value in LEVELS.items()}
 
 
 ACK = b'\x70'
@@ -85,8 +89,22 @@ class Bomb:
 
         :return: The read value
         """        
-        return struct.unpack("I", self._read(4))[0]
-    
+        return struct.unpack("I", self._read(4))[0]  
+
+    def _read_cstr(self) -> str:
+        """
+        Reads a C-string from the serial.
+
+        :return: The read string
+        """
+        output = b''
+        while (value := self._serial.read(1)) not in (b'', b'\x00'):
+            output += value
+
+        if value == b'':
+            raise TimeoutError('Timeout recieved while reading string')
+
+        return output
 
     def _write32(self, value: int):
         """
@@ -183,3 +201,21 @@ class Bomb:
             raise ValueError(f'"{value}" is not a supported level')
         
         self.send_command(COMMANDS['set-level'] + LEVELS[value])
+
+    @property
+    def level_queue(self) -> Sequence[str]:
+        """
+        Get the next levels queue
+        """
+        self.send_command(COMMANDS['get-level-queue'])
+        return list(RAW_LEVELS[raw_level] for raw_level in self._read_cstr())
+
+    @level_queue.setter
+    def level_queue(self, value: bytes):
+        """
+        Set the next levels queue
+        """
+        if not isinstance(value, bytes):
+            value = b''.join(LEVELS[level] for level in value)
+
+        self.send_command(COMMANDS['set-level-queue'] + value + b'\x00')

@@ -28,3 +28,6 @@ void setup_levels();
 
 char get_raw_mode();
 bool set_raw_mode(char raw_mode);
+
+const char *get_level_queue();
+bool set_level_queue(const char *queue);

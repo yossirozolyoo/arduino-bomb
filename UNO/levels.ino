@@ -9,20 +9,13 @@ static const int level_pins[] = {
   A0, A1, A2, A3
 };
 
+static char level_queue[3] = {
+  'S', 'I'
+};
+
 RunningModes::RunningModes mode = RunningModes::UART;
 static uint32_t level_pins_last_state = 0;
 unsigned long end_time = 0; // To be filled by main
-
-void setup_levels() {
-  for (size_t i = 0; i < COUNTOF(level_pins); i++) {
-    pinMode(level_pins[i], INPUT);
-    digitalWrite(level_pins[i], HIGH);
-  }
-
-  end_time = (millis() / 1000) + TOTAL_TIME;
-
-  initServer();
-}
 
 static uint32_t get_level_pins() {
   uint32_t output = 0;
@@ -34,6 +27,17 @@ static uint32_t get_level_pins() {
   }
 
   return output;
+}
+
+void setup_levels() {
+  for (size_t i = 0; i < COUNTOF(level_pins); i++) {
+    pinMode(level_pins[i], INPUT);
+    digitalWrite(level_pins[i], HIGH);
+  }
+
+  end_time = (millis() / 1000) + TOTAL_TIME;
+  level_pins_last_state = get_level_pins();
+  initServer();
 }
 
 void failiure_main() {
@@ -101,14 +105,16 @@ bool level_done(RunningModes::RunningModes expectedMode) {
 
   // Check if user cut the correct wire
   uint32_t current_state = get_level_pins();
-  if (current_state == level_pins_last_state) {
-    // The user didn't cut any wire since the last check
-    return false;
-  }
+  if ((level_pins_last_state | (1 << (int)mode)) == current_state) {
+    // The user cut the correct wire since the last check, move to the next level
+    if (level_queue[0]) {
+      set_raw_mode(level_queue[0]);
+      strcpy(level_queue, level_queue + 1);
+    } else {
+      // Level queue is done
+      mode = RunningModes::DONE;
+    }
 
-  if ((current_state & ~(1 << (int)mode)) == level_pins_last_state) {
-    // The user cut the correct wire since the last check
-    mode = (RunningModes::RunningModes) ((int)mode + 1);
     level_pins_last_state = current_state;
 
     // Present an animation to the user based on the LEDs
@@ -117,6 +123,11 @@ bool level_done(RunningModes::RunningModes expectedMode) {
     }
 
     return true;
+  }
+
+  if (current_state == level_pins_last_state) {
+    // The user didn't cut any wire since the last check
+    return false;
   }
 
   // The user cut the wrong wire since the last check
@@ -137,5 +148,23 @@ bool set_raw_mode(char raw_mode) {
   }
 
   mode = found - modes;
+  return true;
+}
+
+const char *get_level_queue() {
+  return level_queue;
+}
+bool set_level_queue(const char *queue) {
+  if (strlen(queue) > COUNTOF(level_queue) - 1) {
+    return false;
+  }
+
+  for (const char *current = queue; *current; current++) {
+    if (!strchr(RAW_MODES, *current)) {
+      return false;
+    }
+  }
+
+  strcpy(level_queue, queue);
   return true;
 }

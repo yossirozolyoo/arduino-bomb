@@ -1,6 +1,8 @@
 #include "serialServer.h"
 #include "screen.h"
 
+#include <string.h>
+
 #define SERIAL_TIMEOUT      1000
 #define COUNTOF(arr)    (sizeof(arr) / sizeof(arr[0]))
 
@@ -12,6 +14,8 @@ namespace Commands {
     SET_REMAINING_TIME,
     GET_LEVEL,
     SET_LEVEL,
+    GET_LEVEL_QUEUE,
+    SET_LEVEL_QUEUE
   };
 };
 
@@ -60,16 +64,16 @@ static void nack() {
 
 typedef void (*command)();
 
-static void keep_alive() {
+static void command_keep_alive() {
   ack();
 }
 
-static void get_remaining_time() {
+static void command_get_remaining_time() {
   ack();
   write((uint32_t) (end_time - (millis() / 1000)));
 }
 
-static void set_remaining_time() {
+static void command_set_remaining_time() {
   unsigned long remaining = 0;
 
   if (read(remaining)) {
@@ -80,12 +84,12 @@ static void set_remaining_time() {
   }
 }
 
-static void get_level() {
+static void command_get_level() {
   ack();
   write(get_raw_mode());
 }
 
-static void set_level() {
+static void command_set_level() {
   char raw_mode = 0;
 
   if (read(raw_mode)) {
@@ -96,12 +100,32 @@ static void set_level() {
   }
 }
 
+static void command_get_level_queue() {
+  ack();
+  
+  const char *level_queue = get_level_queue();
+  Serial.write(level_queue, strlen(level_queue) + 1);
+}
+
+static void command_set_level_queue() {
+  char level_queue[10] = {};
+  Serial.readBytesUntil('\0', level_queue, sizeof(level_queue) - 1);
+
+  if (set_level_queue(level_queue)) {
+    ack();
+  } else {
+    nack();
+  }
+}
+
 static command command_handlers[] = {
-  keep_alive,
-  get_remaining_time,
-  set_remaining_time,
-  get_level,
-  set_level
+  command_keep_alive,
+  command_get_remaining_time,
+  command_set_remaining_time,
+  command_get_level,
+  command_set_level,
+  command_get_level_queue,
+  command_set_level_queue
 };
 
 void initServer() {
