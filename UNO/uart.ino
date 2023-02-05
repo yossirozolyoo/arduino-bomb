@@ -5,7 +5,7 @@
 
 #define UART_MESSAGE     "CUT THE RED WIRE"
 
-static size_t readBytes(SoftwareSerial &serial, uint8_t *read_buffer, size_t buffer_size) {
+static size_t uartReadBytes(SoftwareSerial &serial, uint8_t *read_buffer, size_t buffer_size) {
   unsigned long read_end = millis() + serial.getTimeout();
   size_t left = buffer_size;
   do {
