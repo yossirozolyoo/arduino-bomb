@@ -1,5 +1,7 @@
+import sys
 import serial
 import struct
+import glob
 from typing import Union, Sequence
 from errors import *
 from datetime import timedelta
@@ -79,7 +81,7 @@ class Bomb:
         """
         response = self._serial.read(size)
         if len(response) < size:
-            raise TimeoutError(f'Timeout reached, recieved {len(response)} out of {size} requested')
+            raise TimeoutError(f'Timeout reached, recieved {len(response)} bytes out of {size} requested')
         
         return response
 
@@ -222,3 +224,31 @@ class Bomb:
             value = b''.join(LEVELS[level] for level in value)
 
         self.send_command(COMMANDS['set-level-queue'] + value + b'\x00')
+
+
+def list_bombs() -> Sequence[Bomb]:
+    """
+    Lists all available bombs
+
+    :raises EnvironmentError: On unsupported or unknown platforms
+    :return: A list of the bombs connected to the system
+    """
+    if sys.platform.startswith('win'):
+        ports = ['COM%s' % (i + 1) for i in range(256)]
+    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
+        # this excludes your current terminal "/dev/tty"
+        ports = glob.glob('/dev/tty[A-Za-z]*')
+    elif sys.platform.startswith('darwin'):
+        ports = glob.glob('/dev/tty.*')
+    else:
+        raise EnvironmentError('Unsupported platform')
+
+    result = []
+    for port in ports:
+        try:
+            bomb = Bomb(port)
+            result.append(bomb)
+        except BombError:
+            pass
+
+    return result
